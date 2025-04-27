@@ -1,3 +1,41 @@
+// Esperar o DOM estar carregado
+document.addEventListener("DOMContentLoaded", () => {
+  // Selecionar o formulário de login
+  const loginForm = document.getElementById("loginForm");
+
+  // Adicionar evento no submit
+  loginForm.addEventListener("submit", function (e) {
+    e.preventDefault(); // Evita que a página recarregue
+
+    // Capturar os valores do formulário
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+
+    // Enviar o login
+    fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: email, password: senha }), // Ajuste se necessário
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          alert("Login bem-sucedido!");
+          // Você pode esconder o formulário ou redirecionar aqui
+        } else {
+          alert(data.message || "Erro ao fazer login.");
+        }
+      })
+      .catch((err) => {
+        console.error("Erro:", err);
+        alert("Erro na requisição.");
+      });
+  });
+});
+
 const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", async (e) => {

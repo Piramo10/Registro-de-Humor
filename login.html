@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login & Registro com Tema</title>
+    <style>
+      :root {
+        --text-color: #333;
+      }
+      /* Estilo do corpo */
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f0f0f0;
+        transition: background-color 0.3s, color 0.3s;
+        position: relative;
+      }
+      body.escuro {
+        background-color: #222;
+        color: #fff;
+      }
+      /* Botão fixo no canto superior direito, estilizado */
+      .tema-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-color);
+        padding: 5px 10px;
+        z-index: 999;
+        outline: none;
+      }
+      /* Container da tela de login/registro */
+      .container {
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      body.escuro .container {
+        background: #333;
+        color: #fff;
+      }
+      h2 {
+        margin-bottom: 20px;
+      }
+      form {
+        display: none;
+        flex-direction: column;
+      }
+      form.active {
+        display: flex;
+      }
+      input {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #4caf50;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .toggle-link {
+        margin-top: 15px;
+        font-size: 14px;
+        cursor: pointer;
+        color: #007bff;
+      }
+      .toggle-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body class="fundoClaro">
+    <!-- Botão de tema no canto superior direito -->
+    <button class="tema-btn" id="mudarTema" title="Alternar modo tema">
+      🌙
+    </button>
+
+    <!-- Conteúdo principal -->
+    <div class="container">
+      <h2 id="titulo">Faça seu login</h2>
+
+      <!-- Formulário de login -->
+      <form id="loginForm" class="active">
+        <input type="email" id="loginEmail" placeholder="E-mail" required />
+        <input type="password" id="loginSenha" placeholder="Senha" required />
+        <button type="submit">Entrar</button>
+        <div class="toggle-link" id="mostrarRegistro">Criar uma conta</div>
+      </form>
+
+      <!-- Formulário de registro -->
+      <form id="registerForm">
+        <input type="text" id="nome" placeholder="Nome Completo" required />
+        <input type="email" id="registerEmail" placeholder="E-mail" required />
+        <input
+          type="password"
+          id="registerSenha"
+          placeholder="Senha"
+          required
+        />
+        <button type="submit">Registrar</button>
+        <div class="toggle-link" id="mostrarLogin">Já tenho conta</div>
+      </form>
+    </div>
+
+    <script>
+      // Alternar tema
+      const btnTema = document.getElementById("mudarTema");
+      const body = document.body;
+
+      btnTema.onclick = () => {
+        if (body.className === "fundoClaro") {
+          body.className = "escuro";
+          btnTema.textContent = "☀️"; // modo claro
+          btnTema.title = "Modo Claro";
+        } else {
+          body.className = "fundoClaro";
+          btnTema.textContent = "🌙"; // modo escuro
+          btnTema.title = "Modo Escuro";
+        }
+      };
+
+      // Alternar entre login e registro
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+      const titulo = document.getElementById("titulo");
+
+      document.getElementById("mostrarRegistro").onclick = () => {
+        loginForm.classList.remove("active");
+        registerForm.classList.add("active");
+        titulo.textContent = "Criar nova conta";
+      };
+
+      document.getElementById("mostrarLogin").onclick = () => {
+        loginForm.classList.add("active");
+        registerForm.classList.remove("active");
+        titulo.textContent = "Faça seu login";
+      };
+
+      // Código de login
+      document.getElementById("loginForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value;
+        const senha = document.getElementById("loginSenha").value;
+
+        try {
+          const response = await fetch("http://localhost:3000/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: email, password: senha }),
+          });
+          const data = await response.json();
+
+          if (response.ok && data.token) {
+            alert("Login bem-sucedido!");
+            // Salva o token
+            localStorage.setItem("token", data.token);
+            // Redireciona para o site principal
+            window.location.href = "site.html"; // Troque pelo nome do seu arquivo principal se necessário
+          } else {
+            alert("Erro: " + (data.message || "Credenciais incorretas"));
+          }
+        } catch (err) {
+          alert("Erro na conexão com o servidor");
+        }
+      };
+
+      // Código de cadastro
+      document.getElementById("registerForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("nome").value;
+        const email = document.getElementById("registerEmail").value;
+        const senha = document.getElementById("registerSenha").value;
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/auth/register",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: nome,
+                email: email,
+                password: senha,
+              }),
+            }
+          );
+          const data = await response.json();
+
+          if (response.ok) {
+            alert("Cadastro realizado: " + data.message);
+            // Pode incluir auto login aqui, se desejar
+            // localStorage.setItem("token", data.token);
+            // window.location.href = "site.html";
+          } else {
+            alert("Erro: " + (data.message || "Erro ao registrar"));
+          }
+        } catch (err) {
+          alert("Erro na conexão com o servidor");
+        }
+      };
+    </script>
+  </body>
+</html>
